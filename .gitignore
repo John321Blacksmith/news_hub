@@ -1,3 +1,4 @@
 __pycache__/
 .venv/
-*.sqlite
+news_hub/secrs.py
+*.sqlite3
