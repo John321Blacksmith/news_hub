@@ -59,7 +59,7 @@ ROOT_URLCONF = 'news_hub.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -127,3 +127,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# the places to where the user is 
+# sent after having logged in
+LOGIN_REDIRECT_URL = 'home'
+# and logged out
+LOGOUT_REDIRECT_URL = 'home'
+
+# the email agent that allows to receive messages offline only
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
