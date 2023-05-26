@@ -35,6 +35,10 @@ INSTALLED_APPS = [
     # custom apps
     'accounts.apps.AccountsConfig',
 
+    # third party apps
+    'crispy_forms',
+    'crispy_bootstrap5',
+
     # default apps
     'django.contrib.admin',
     'django.contrib.auth',
@@ -134,6 +138,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'home'
 # and logged out
 LOGOUT_REDIRECT_URL = 'home'
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
+
 
 # the email agent that allows to receive messages offline only
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
