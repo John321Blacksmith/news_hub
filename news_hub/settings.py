@@ -34,6 +34,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     # custom apps
     'accounts.apps.AccountsConfig',
+    'news.apps.NewsConfig',
 
     # third party apps
     'crispy_forms',
