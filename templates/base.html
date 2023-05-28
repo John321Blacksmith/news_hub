@@ -42,6 +42,15 @@
 	       </div>
 	      </header>
 		<main>
+			<nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+			  <ol class="breadcrumb">
+			    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+			    <li class="breadcrumb-item"><a href="{% url 'news:head_news' %}">News</a></li>
+			    {% if news %}
+			    	<li class="breadcrumb-item"><a href="{% url 'news:news_details' news.id %}">News #{{ news.id }}</a></li>
+			    {% endif %}
+			  </ol>
+			</nav>
 			{% block content %}{% endblock content %}
 		</main>
     </div>
