@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     # custom apps
     'accounts.apps.AccountsConfig',
     'news.apps.NewsConfig',
+    'content_scraper.apps.ContentScraperConfig',
 
     # third party apps
     'crispy_forms',

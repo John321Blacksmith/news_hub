@@ -1,4 +1,5 @@
 __pycache__/
 .venv/
 news_hub/secrs.py
+content_scraper/site_data.py
 *.sqlite3
