@@ -21,7 +21,7 @@ async def get_response(session, url):
 
 async def create_tasks(session, urls):
 	"""
-	This fnction wades through the
+	This function wades through the
 	list of links and processes all
 	the	responses to the tasks.
 	"""
@@ -37,10 +37,15 @@ async def create_tasks(session, urls):
 
 async def main():
 	"""
-	This function intializes the session
+	This function intializes the session.
+	It then lets another function
+	get the links of the objects
+	and then all of the links are
+	used to initialize requests to the
+	tasks.
 	"""
 	async with aiohttp.ClientSession(headers={'User-Agent': random.choice(site_data.AGENTS)}) as session:
-		response = await get_response(session, None)
+		results = await create_tasks(session)
 		
 
 asyncio.run(main())

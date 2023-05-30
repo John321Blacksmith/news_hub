@@ -14,40 +14,72 @@ instance capable for dumping
 the scraped web data to the DB.
 """
 from bs4 import BeautifulSoup as Bs
-from news.models import News
+# from news.models import News
 
 
-def fetch_data(resp, item, site_dict: dict, list_of_objs=[]):
+class DataFetcher(Bs):
+	def __init__(self):
+		super().__init__()
 
-	soup = Bs(resp, 'html.parser')
+	def get_soup(self, response):
+		"""
+		This method creates a soup object.
+		"""
+		soup = Bs(response, 'html.parser')
+		return soup
 
-	objects = soup.select(site_dict[item]['object'])
+	def get_links(self):
+		"""
+		This method extracts the links
+		of every object in the soup.
+		"""
+		pass
 
-	for i in range(0, len(objects)):
-		obj = {
-			'title': objects[i].select_one(site_dict['title']),
-			'date': objects[i].select_one(site_dict['date']),
-			'source': objects[i].select_one(site_dict['source']),
-			'content': objects[i].select_one(site_dict['content']),
-			'image': objects[i].select_one(site_dict['image']),
-			'category': objects[i].select_one(site_dict['category']),
-		}
-		list_of_objs.append(obj)
+	def fetch_data(response, item, site_dict: dict, list_of_objs=[]):
+		"""
+		This method gets a response from every
+		individual object page and extracts the
+		necessary data.
+		"""
+		objects = soup.select(site_dict[item]['object'])
 
-	return list_of_objs
-
-
-def dump_data(objects: list):
-	model = News
-	if len(objects) != 0:
 		for i in range(0, len(objects)):
-			news = model.objects.create(
-					title=objects[i]['title'],
-					date=objects[i]['date'],
-					source=objects[i]['source'],
-					content=objects[i]['content'],
-					category=objects[i]['category'],
-				)
+			obj = {
+				'title': objects[i].select_one(site_dict['title']),
+				'date': objects[i].select_one(site_dict['date']),
+				'source': objects[i].select_one(site_dict['source']),
+				'content': objects[i].select_one(site_dict['content']),
+				'image': objects[i].select_one(site_dict['image']),
+				'category': objects[i].select_one(site_dict['category']),
+			}
+			list_of_objs.append(obj)
 
-		else:
-			print('The data has been saved to the DB')
+		return list_of_objs
+
+
+class News:
+	pass
+
+
+class DataDumper:
+	def __init__(self):
+		self.model = News
+
+	def dump_data(objects: list):
+		"""
+		This receives a list of objects
+		and saves each of the obects to the
+		database via ORM system.
+		"""
+		if len(objects) != 0:
+			for i in range(0, len(objects)):
+				news = self.model.objects.create(
+						title=objects[i]['title'],
+						date=objects[i]['date'],
+						source=objects[i]['source'],
+						content=objects[i]['content'],
+						category=objects[i]['category'],
+					)
+
+			else:
+				print('The data has been saved to the DB')
