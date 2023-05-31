@@ -4,57 +4,82 @@ that are involved in an asynchronous work.
 The functions below take a role in the web data
 manipulation, whereas the async module manages
 in performance speed.
-
-This class creates an
-instanse capable for web data
-extraction.
-
-This class creates an
-instance capable for dumping
-the scraped web data to the DB.
 """
 from bs4 import BeautifulSoup as Bs
 # from news.models import News
 
 
-class DataFetcher(Bs):
-	def __init__(self):
-		super().__init__()
+class DataFetcher:
+	"""
+	This class creates an
+	instanse capable of web data
+	extraction.
+	"""
+	def __init__(self, item, site_dict):
+		self.item = item
+		self.site_dict = site_dict
 
-	def get_soup(self, response):
+	def get_soup(self, response=None, file_name=None, loc_file=False):
 		"""
 		This method creates a soup object.
 		"""
-		soup = Bs(response, 'html.parser')
+		if loc_file:
+			try:
+				with open(file_name, mode='r', encoding='utf-8') as f:
+					soup = Bs(f, 'html.parser')
+			except FileNotFoundError:
+				print('Couldn\'t find the file')
+		else:
+			soup = Bs(response, 'html.parser')
+
 		return soup
 
-	def get_links(self):
+	def get_links(self, response=None, file_name=None, loc_file=False, list_of_links = []):
 		"""
 		This method extracts the links
 		of every object in the soup.
 		"""
-		pass
+		if loc_file:
+			soup = self.get_soup(file_name=file_name, loc_file=True)
+		else:
+			soup = self.get_soup(response)
 
-	def fetch_data(response, item, site_dict: dict, list_of_objs=[]):
+		objs = soup.find_all(self.site_dict[self.item]['object']['tag'], self.site_dict[self.item]['object']['class'])
+		
+		for i in range(0, len(objs)):
+			link = objs[i].find(self.site_dict[self.item]['source']['tag'])
+			list_of_links.append(self.site_dict[self.item]['url'][:21] + link['href'])
+
+		return list_of_links
+
+	def fetch_data(self, response=None, file_name=None, loc_file=False):
 		"""
 		This method gets a response from every
 		individual object page and extracts the
 		necessary data.
 		"""
-		objects = soup.select(site_dict[item]['object'])
+		if loc_file:
+			soup = self.get_soup(file_name=file_name, loc_file=True)
+		else:
+			soup = self.get_soup(response)
 
-		for i in range(0, len(objects)):
-			obj = {
-				'title': objects[i].select_one(site_dict['title']),
-				'date': objects[i].select_one(site_dict['date']),
-				'source': objects[i].select_one(site_dict['source']),
-				'content': objects[i].select_one(site_dict['content']),
-				'image': objects[i].select_one(site_dict['image']),
-				'category': objects[i].select_one(site_dict['category']),
-			}
-			list_of_objs.append(obj)
+		title = soup.find(self.site_dict[self.item]['title']['tag'], self.site_dict[self.item]['title']['class'])
+		date = soup.find(self.site_dict[self.item]['date']['tag'], self.site_dict[self.item]['date']['class'])
+		source = soup.find(self.site_dict[self.item]['source']['tag'])
+		content = soup.find(self.site_dict[self.item]['content']['tag'], self.site_dict[self.item]['content']['class'])
+		image = soup.find(self.site_dict[self.item]['image']['tag'], self.site_dict[self.item]['image']['class'])
+		category = soup.find(self.site_dict[self.item]['category']['tag'], self.site_dict[self.item]['category']['class'])
+		
+		obj = {
+			'title': title.text,
+			'date': date['datetime'],
+			'source':source['href'],
+			'content':content.text,
+			'image':image['src'],
+			'category':category,
+		}
 
-		return list_of_objs
+		return obj
 
 
 class News:
@@ -62,6 +87,11 @@ class News:
 
 
 class DataDumper:
+	"""
+	This class creates an
+	instance capable of dumping
+	the scraped web data to the DB.
+	"""
 	def __init__(self):
 		self.model = News
 
