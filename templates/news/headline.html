@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% block title %}Hadlines{% endblock title %}
 {% block content %}
+<div class="update_button">
+	 <button action="#" class="btn btn-primary" type="button">Update List</button>
+</div>
 <div class="row row-cols-1 row-cols-md-2 g-4">
 	{% for news in news_list %}
 	<a href="{% url 'news:news_details' news.id %}">

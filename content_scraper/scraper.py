@@ -34,7 +34,7 @@ class DataFetcher:
 
 		return soup
 
-	def get_links(self, response=None, file_name=None, loc_file=False, list_of_links = []):
+	def get_links(self, response=None, file_name=None, loc_file=False, list_of_links = []) -> list:
 		"""
 		This method extracts the links
 		of every object in the soup.
@@ -52,7 +52,7 @@ class DataFetcher:
 
 		return list_of_links
 
-	def fetch_data(self, response=None, file_name=None, loc_file=False):
+	def fetch_data(self, response=None, file_name=None, loc_file=False, obj={}) -> dict:
 		"""
 		This method gets a response from every
 		individual object page and extracts the
@@ -69,15 +69,21 @@ class DataFetcher:
 		content = soup.find(self.site_dict[self.item]['content']['tag'], self.site_dict[self.item]['content']['class'])
 		image = soup.find(self.site_dict[self.item]['image']['tag'], self.site_dict[self.item]['image']['class'])
 		category = soup.find(self.site_dict[self.item]['category']['tag'], self.site_dict[self.item]['category']['class'])
+
 		
-		obj = {
-			'title': title.text,
-			'date': date['datetime'],
-			'source':source['href'],
-			'content':content.text,
-			'image':image['src'],
-			'category':category,
-		}
+		fields = ['title', 'date', 'source', 'content', 'image', 'category']
+		values = [title, date, source, content, image, category]
+		for i in range(0, len(values)):
+			if values[i] is not None:
+				if (fields[i] == 'date') or (fields[i] == 'source') or (fields[i] == 'image'):
+					try:
+						obj[fields[i]] = values[i]['attribute']
+					except KeyError:
+						obj[fields[i]] = values[i]
+				else:
+					obj[fields[i]] = values[i].text
+			else:
+				obj[fields[i]] = values[i]
 
 		return obj
 
@@ -92,10 +98,10 @@ class DataDumper:
 	instance capable of dumping
 	the scraped web data to the DB.
 	"""
-	def __init__(self):
-		self.model = News
+	def __init__(self, model):
+		self.model = model
 
-	def dump_data(objects: list):
+	def dump_data(self, objects: list):
 		"""
 		This receives a list of objects
 		and saves each of the obects to the
