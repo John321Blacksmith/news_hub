@@ -5,6 +5,7 @@ import random
 import asyncio
 import aiohttp
 import django
+from async_iterator import AsyncIterator
 from scraper import DataFetcher, DataDumper
 from site_data import AGENTS, news_data
 import secrs
@@ -76,18 +77,32 @@ async def extract_data(results, list_of_objs=[]) -> list: # coroutine
 	return list_of_objs
 
 
-async def save_news(objects):
+async def create_record(obj):
+	"""
+	This function performs saving a
+	single record to the database.
+	"""
 	model = News
+	return model.objects.acreate(
+			title=web_obj['title'],
+			date=web_obj['date'],
+			source=web_obj['source'],
+			content=web_obj['content'],
+			image=web_obj['image'],
+			category=web_obj['category'],
+		)
+
+
+async def save_news(objects):
+	"""
+	This function receives a list of
+	scraped objects, uses an asynchronous
+	iterator to go through each item and make
+	a record of each to the database.
+	"""
 	if len(objects) != 0:
-			async for i in range(0, len(objects)):
-				obj = model.objects.acreate(
-						title=objects[i]['title'],
-						date=objects[i]['date'],
-						source=objects[i]['source'],
-						content=objects[i]['content'],
-						image=objects[i]['image'],
-						category=objects[i]['category'],
-					)
+			async for web_obj in AsyncIterator(objects):
+				obj = await create_record(web_obj)
 			else:
 				print('The database has been updated.')
 	else:
@@ -108,6 +123,7 @@ async def main() -> None: # coroutine
 		results = await get_tasks(session)
 		print(len(results))
 		objects = await extract_data(results)
+		print(len(objects))
 		await save_news(objects)
 		print(f'End at {time.strftime("%X")}')
 		
