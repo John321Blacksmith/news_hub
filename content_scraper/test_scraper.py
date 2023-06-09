@@ -5,6 +5,7 @@ import random
 import asyncio
 import aiohttp
 import django
+from asgiref.sync import sync_to_async
 from async_iterator import AsyncIterator
 from scraper import DataFetcher, DataDumper
 from site_data import AGENTS, news_data
@@ -12,6 +13,7 @@ import secrs
 sys.path.append(secrs.PROJECT_LOCATION)
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'news_hub.settings')
 django.setup()
+from django.db.models.query import QuerySet
 from news.models import News
 
 headers = {
@@ -26,7 +28,7 @@ async def get_response(session, url): # coroutine
 	"""
 	async with session.get(url) as response:
 		await asyncio.sleep(2)
-		content = await response.text()
+		content = await response.read()
 		return content
 
 
@@ -77,22 +79,6 @@ async def extract_data(results, list_of_objs=[]) -> list: # coroutine
 	return list_of_objs
 
 
-async def create_record(obj):
-	"""
-	This function performs saving a
-	single record to the database.
-	"""
-	model = News
-	return model.objects.acreate(
-			title=web_obj['title'],
-			date=web_obj['date'],
-			source=web_obj['source'],
-			content=web_obj['content'],
-			image=web_obj['image'],
-			category=web_obj['category'],
-		)
-
-
 async def save_news(objects):
 	"""
 	This function receives a list of
@@ -101,8 +87,15 @@ async def save_news(objects):
 	a record of each to the database.
 	"""
 	if len(objects) != 0:
-			async for web_obj in AsyncIterator(objects):
-				obj = await create_record(web_obj)
+			async for obj in AsyncIterator(objects):
+				await QuerySet(model=News).acreate(
+													title = obj['title'],
+													date = obj['date'],
+													source = obj['source'],
+													content = obj['content'],
+													image = obj['image'],
+													category = obj['category'],
+												)
 			else:
 				print('The database has been updated.')
 	else:

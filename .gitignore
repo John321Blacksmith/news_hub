@@ -4,5 +4,6 @@ news_hub/secrs.py
 content_scraper/*.html
 content_scraper/test_html.py
 content_scraper/site_data.py
+content_scraper/ooo.py
 content_scraper/secrs.py
 *.sqlite3
