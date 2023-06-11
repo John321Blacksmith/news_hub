@@ -7,7 +7,7 @@ import aiohttp
 import django
 from asgiref.sync import sync_to_async
 from async_iterator import AsyncIterator
-from scraper import DataFetcher, DataDumper
+from scraper import DataFetcher
 from site_data import AGENTS, news_data
 import secrs
 sys.path.append(secrs.PROJECT_LOCATION)
@@ -62,7 +62,7 @@ async def get_tasks(session) -> list: # coroutine
 	return results
 
 
-async def extract_data(results, list_of_objs=[]) -> list: # coroutine
+async def extract_data(results) -> list: # coroutine
 	"""
 	This function receives a list
 	of tasks as results of responses
@@ -70,11 +70,13 @@ async def extract_data(results, list_of_objs=[]) -> list: # coroutine
 	of them. It then returns a list of
 	the objects formed from each result.
 	"""
+	list_of_objs = []
 	content_parser = DataFetcher('gazeta_ru', news_data)
 	
 	for i in range(0, len(results)):
 		obj = content_parser.fetch_data(results[i])
-		list_of_objs.append(obj)
+		list_of_objs.append(obj['title'])
+
 
 	return list_of_objs
 
@@ -116,8 +118,10 @@ async def main() -> None: # coroutine
 		results = await get_tasks(session)
 		print(len(results))
 		objects = await extract_data(results)
-		print(len(objects))
-		await save_news(objects)
+		for obj in objects:
+			print(obj['title'])
+		# await save_news([obj for obj in objects if None not in obj.values()])
+		# await save_news(objects)
 		print(f'End at {time.strftime("%X")}')
 		
 
