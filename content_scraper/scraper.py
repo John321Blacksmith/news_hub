@@ -47,14 +47,16 @@ class DataFetcher:
 		objs = soup.find_all(self.site_dict[self.item]['object']['tag'], self.site_dict[self.item]['object']['class'])
 		
 		for i in range(0, len(objs)):
-			link = objs[i].find(self.site_dict[self.item]['source']['tag'])
+			link = objs[i].find(self.site_dict[self.item]['obj_link']['tag'])
 			list_of_links.append(self.site_dict[self.item]['url'][:21] + link['href'])
 
 		return list_of_links
 
+
+
 	def fetch_data(self, response=None, file_name=None, loc_file=False, obj={}) -> dict:
 		"""
-		This method gets a response from every
+		This method receives a response object from every
 		individual object page and extracts the
 		necessary data.
 		"""
@@ -63,59 +65,50 @@ class DataFetcher:
 		else:
 			soup = self.get_soup(response)
 
-		title = soup.find(self.site_dict[self.item]['title']['tag'], self.site_dict[self.item]['title']['class'])
-		date = soup.find(self.site_dict[self.item]['date']['tag'], self.site_dict[self.item]['date']['class'])
-		source = soup.find(self.site_dict[self.item]['source']['tag'])
-		content = soup.find(self.site_dict[self.item]['content']['tag'], self.site_dict[self.item]['content']['class'])
-		image = soup.find(self.site_dict[self.item]['image']['tag'], self.site_dict[self.item]['image']['class'])
-		category = soup.find(self.site_dict[self.item]['category']['tag'], self.site_dict[self.item]['category']['class'])
-
-		
-		fields = ['title', 'date', 'source', 'content', 'image', 'category']
-		values = [title, date, source, content, image, category]
-		for i in range(0, len(values)):
-			if values[i] is not None:
-				if (fields[i] == 'date') or (fields[i] == 'source') or (fields[i] == 'image'):
-					try:
-						obj[fields[i]] = values[i]['attribute']
-					except KeyError:
-						obj[fields[i]] = values[i]
-				else:
-					obj[fields[i]] = values[i].text
+		if 'title' in self.site_dict[self.item]['obj_components']:
+			title = soup.find(self.site_dict[self.item]['title']['tag'], self.site_dict[self.item]['title']['class'])
+			if title:
+				obj['title'] = title.text
 			else:
-				obj[fields[i]] = values[i]
+				obj['title'] = 'no data'
+
+		if 'date' in self.site_dict[self.item]['obj_components']:
+			date = soup.find(self.site_dict[self.item]['date']['tag'], self.site_dict[self.item]['date']['class'])
+			if date:
+				try:
+					obj['date'] = date['attribute']
+				except KeyError:
+					obj['date'] = '1999-07-02 06:00:00.000000-00:00'
+			else:
+				obj['date'] = '1999-07-02 06:00:00.000000-00:00'
+
+		if 'source' in self.site_dict[self.item]['obj_components']:
+			sources = soup.find_all(self.site_dict[self.item]['source']['tag'])
+			for source in sources:
+				for attr in source.attrs:
+					if source[attr] == self.site_dict[self.item]['source']['keyword']:
+						obj['source'] = source['href']
+						break
+
+		if 'content' in self.site_dict[self.item]['obj_components']:
+			content = soup.find(self.site_dict[self.item]['content']['tag'], self.site_dict[self.item]['content']['class'])
+			if content:
+				obj['content'] = content.text
+			else:
+				obj['content'] = 'no data'
+
+		if 'image' in self.site_dict[self.item]['obj_components']:
+			image = soup.find(self.site_dict[self.item]['image']['tag'], self.site_dict[self.item]['image']['class'])
+			if image:
+				obj['image'] = image['src']
+			else:
+				obj['image'] = 'no data'
+
+		if 'category' in self.site_dict[self.item]['obj_components']:
+			category = soup.find(self.site_dict[self.item]['category']['tag'], self.site_dict[self.item]['category']['class'])
+			if not category:
+				obj['category'] = 'no data'
+			else:
+				obj['category'] = category
 
 		return obj
-
-
-class News:
-	pass
-
-
-class DataDumper:
-	"""
-	This class creates an
-	instance capable of dumping
-	the scraped web data to the DB.
-	"""
-	def __init__(self, model):
-		self.model = model
-
-	def dump_data(self, objects: list):
-		"""
-		This receives a list of objects
-		and saves each of the obects to the
-		database via ORM system.
-		"""
-		if len(objects) != 0:
-			for i in range(0, len(objects)):
-				news = self.model.objects.create(
-						title=objects[i]['title'],
-						date=objects[i]['date'],
-						source=objects[i]['source'],
-						content=objects[i]['content'],
-						category=objects[i]['category'],
-					)
-
-			else:
-				print('The data has been saved to the DB')
