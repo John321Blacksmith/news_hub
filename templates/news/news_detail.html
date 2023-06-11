@@ -1,9 +1,30 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 {% block title %}{{ news.title }}{% endblock title %}
 {% block content %}
-<p>{{ news.title }}</p>
-<img src="{{ news.image }}" alt="{{ news.title }}">
-<p>{{ news.date }}</p>
-<a href="{{ news.source }}">Source</a>
-<p>{{ news.content }}</p>
+<div class="news-entry">
+	<p>{{ news.title }}</p>
+	<img src="{{ news.image }}" alt="{{ news.title }}">
+	<p>{{ news.date }}</p>
+	<a href="{{ news.source }}">Source</a>
+	<p>{{ news.content }}</p>
+</div>
+<div class="comments_box">
+	{% for comment in news.comment_set.all %}
+		<div class="comment_item">
+			<p>Author: {{ comment.author }}</p>
+			<p>{{ comment.body }}</p>
+		</div>
+	{% empty %}
+	<p>No comments here yet</p>
+	{% endfor %}
+</div>
+<br/>
+<br/>
+<p>Leave a Comment</p>
+<form action="" method="post">
+	{% csrf_token %}
+	{{ form|crispy }}
+	<button type="submit" class="btn btn-primary">Comment</button>
+</form>
 {% endblock content %}
