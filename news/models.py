@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from django.conf import settings
 # Create your models here.
 
 
@@ -21,3 +22,22 @@ class News(models.Model):
 
 	def get_absolute_url(self):
 		return reverse('news:news_details', kwargs={'pk': self.pk})
+
+
+class Comment(models.Model):
+	"""
+	This model represents a comment
+	object.
+	"""
+	news = models.ForeignKey(News, on_delete=models.CASCADE)
+	body = models.TextField(max_length=200)
+	author = models.ForeignKey(
+				settings.AUTH_USER_MODEL,
+				on_delete=models.CASCADE,
+		)
+
+	def __str__(self):
+		return self.body
+
+	def get_absolute_url(self):
+		return reverse('news:news_details', kwargs={'pk': self.news.pk})
